@@ -109,6 +109,26 @@ class InfoUpdate(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
 
+class UserGetprofile(APIView):
+    serializer_class = UserSerializer
+   
+
+    def get(self, request, *args, **kwargs):
+        authenticated, payload = getUser(request)
+        if authenticated:
+            
+                try:
+                    person_instance = User.objects.get(id=payload['id'])
+                    serializer = self.serializer_class(person_instance)
+                    return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+                except User.DoesNotExist:
+                    return Response({'message': 'Person not found.'}, status=status.HTTP_404_NOT_FOUND)
+            
+        else:
+            raise AuthenticationFailed('Unauthenticated!')
+
+
+
 
 
 
