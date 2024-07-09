@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import RegisterView,Login,InfoUpdate,UserGetprofile
+from .views import RegisterView,Login,InfoUpdate,UserGetprofile,RefreshToken
 
-from rest_framework_simplejwt.views import TokenRefreshView
+
 
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     
     path("login/", Login.as_view()),
     path("profile/", UserGetprofile.as_view()),
+    path('refresh-token/', RefreshToken.as_view(), name='refresh-token'),
     
     
    

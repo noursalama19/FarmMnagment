@@ -133,4 +133,39 @@ class UserGetprofile(APIView):
 
 
 
+class RefreshToken(APIView):
+    def post(self, request):
+        
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response({'error': 'Unauthenticated!'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'Unauthenticated!'}, status=status.HTTP_403_FORBIDDEN)
+        except jwt.InvalidTokenError:
+            return Response({'error': 'Unauthenticated!'}, status=status.HTTP_403_FORBIDDEN)
+
+      
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+        new_payload = {
+            'id': user.id,
+            'exp': datetime.utcnow() + timedelta(days=1),  # Set the new expiration time
+            'iat': datetime.utcnow(),
+        }
+        new_token = jwt.encode(new_payload, 'secret', algorithm='HS256')
+
+        # Set the new token in the response
+        response = Response()
+        response.set_cookie(key='jwt', value=new_token, httponly=True)
+        response.data = {
+            'jwt': new_token,
+            'id': user.id,
+        }
+        return response
 
